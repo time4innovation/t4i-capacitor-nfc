@@ -26,8 +26,6 @@ import android.content.DialogInterface;
 import android.provider.Settings;
 import android.widget.Toast;
 
-import de.zilicon.plugins.nfc.R;
-
 @CapacitorPlugin(name = "Time4InnovationNfc")
 public class Time4InnovationNfcPlugin extends Plugin {
 

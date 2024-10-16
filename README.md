@@ -43,4 +43,5 @@ nfcInit() {
         .catch((error) => {
             console.error("Error initializing NFC:", error);
         });
-}```
+}
+```

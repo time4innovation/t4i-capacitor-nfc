@@ -1,0 +1,6 @@
+<resources>
+    <string name="nfc_not_available">NFC is not available on this device.</string>
+    <string name="nfc_disabled">NFC is disabled. Would you like to enable it?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+</resources>

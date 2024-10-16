@@ -8,7 +8,6 @@ import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
-import android.nfc.tech.NfcA;
 import android.util.Log;
 
 import com.getcapacitor.JSObject;
@@ -17,8 +16,17 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.annotation.CapacitorPlugin;
 import com.getcapacitor.PluginMethod;
 
+import org.json.JSONArray;
+
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.provider.Settings;
+import android.widget.Toast;
+
+import de.zilicon.plugins.nfc.R;
 
 @CapacitorPlugin(name = "Time4InnovationNfc")
 public class Time4InnovationNfcPlugin extends Plugin {
@@ -31,14 +39,7 @@ public class Time4InnovationNfcPlugin extends Plugin {
     public void load() {
         super.load();
 
-        // Initialize NFC Adapter
-        nfcAdapter = NfcAdapter.getDefaultAdapter(getContext());
-
-        if (nfcAdapter == null) {
-            notifyJavaScript("NFC is not available on this device.");
-        } else if (!nfcAdapter.isEnabled()) {
-            notifyJavaScript("Please enable NFC in your settings.");
-        }
+        checkNfcPermissions();
 
         Log.d(TAG, "nfc ok " + nfcAdapter);
     }
@@ -92,21 +93,28 @@ public class Time4InnovationNfcPlugin extends Plugin {
         Log.d(TAG, "handleOnNewIntent tag " + tag);
 
         if (tag != null) {
-            String tagInfo = readFromTag(tag);
-            Log.d(TAG, "handleOnNewIntent tag info " + tagInfo);
+            JSObject tagDetails = readFromTag(tag);
+            Log.d(TAG, "handleOnNewIntent tag info " + tagDetails);
 
-            notifyJavaScript(tagInfo);
+            notifyJavaScript(tagDetails);
         }
         // }
     }
 
-    private String readFromTag(Tag tag) {
+    private JSObject readFromTag(Tag tag) {
         Log.d(TAG, "readFromTag " + tag);
-        StringBuilder stringBuilder = new StringBuilder();
-        byte[] id = tag.getId();
-        stringBuilder.append("Tag ID (hex): ").append(bytesToHex(id)).append("\n");
 
+        JSObject tagDetails = new JSObject();
+
+        // prepare tag id
+        byte[] id = tag.getId();
+        String tagId = bytesToHex(id);
+
+        tagDetails.put("tagId", tagId);
+
+        // prepare tag messages
         Ndef ndef = Ndef.get(tag);
+        JSONArray messagesArray = new JSONArray(); // Array to store messages
         if (ndef != null) {
             try {
                 ndef.connect();
@@ -117,7 +125,8 @@ public class Time4InnovationNfcPlugin extends Plugin {
                     for (NdefRecord ndefRecord : records) {
                         if (ndefRecord.getTnf() == NdefRecord.TNF_WELL_KNOWN &&
                                 Arrays.equals(ndefRecord.getType(), NdefRecord.RTD_TEXT)) {
-                            stringBuilder.append("Message: ").append(getTextFromNdefRecord(ndefRecord)).append("\n");
+                            String message = getTextFromNdefRecord(ndefRecord); // Extract the message
+                            messagesArray.put(message); // Add each message to the array
                         }
                     }
                 }
@@ -125,11 +134,11 @@ public class Time4InnovationNfcPlugin extends Plugin {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        } else {
-            stringBuilder.append("NFC tech not supported");
         }
 
-        return stringBuilder.toString();
+        tagDetails.put("messages", messagesArray);
+
+        return tagDetails;
     }
 
     private String bytesToHex(byte[] bytes) {
@@ -154,16 +163,53 @@ public class Time4InnovationNfcPlugin extends Plugin {
     }
 
     // Notify JavaScript through Capacitor Plugin
-    private void notifyJavaScript(String message) {
+    private void notifyJavaScript(JSObject tagDetails) {
         Log.d(TAG, "notifyJavaScript");
         if (callbackId != null) {
             PluginCall savedCall = getBridge().getSavedCall(callbackId);
             if (savedCall != null) {
-                JSObject result = new JSObject();
-                result.put("tagInfo", message);
-                savedCall.resolve(result);
+                savedCall.resolve(tagDetails);
             }
         }
+    }
+
+    private void checkNfcPermissions() {
+        // Initialize the NFC Adapter
+        nfcAdapter = NfcAdapter.getDefaultAdapter(getContext());
+
+        // Check if NFC is available
+        if (nfcAdapter == null) {
+            Toast.makeText(this.getContext(), R.string.nfc_not_available, Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        // Check if NFC is enabled
+        if (!nfcAdapter.isEnabled()) {
+            // Prompt user to enable NFC
+            showEnableNfcDialog();
+        }
+    }
+
+    private void showEnableNfcDialog() {
+        // Create a dialog to prompt user to enable NFC
+        AlertDialog.Builder builder = new AlertDialog.Builder(this.getContext());
+        builder.setMessage(R.string.nfc_disabled)
+                .setCancelable(false)
+                .setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // Open NFC settings
+                        Intent intent = new Intent(Settings.ACTION_NFC_SETTINGS);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        getContext().startActivity(intent);
+                    }
+                })
+                .setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 
     @PluginMethod
@@ -171,6 +217,6 @@ public class Time4InnovationNfcPlugin extends Plugin {
         Log.d(TAG, "initializeNFC");
         // Save the callbackId for future NFC detections
         callbackId = call.getCallbackId();
-        call.save(); // Save the call in case we need to resolve it later
+        call.setKeepAlive(true); // Save the call in case we need to resolve it later
     }
 }

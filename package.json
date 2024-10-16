@@ -1,6 +1,6 @@
 {
-  "name": "time4innovation-nfc",
-  "version": "0.0.1",
+  "name": "t4i-capacitor-nfc",
+  "version": "0.1.0",
   "description": "Capacitor plugin for reading NFC tags",
   "main": "dist/plugin.cjs.js",
   "module": "dist/esm/index.js",
@@ -13,14 +13,14 @@
     "ios/Plugin/",
     "CapacitorNfc.podspec"
   ],
-  "author": "Lorenz Schober",
+  "author": "Lorenz Schober | Time4Innovation",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/time4innovation/time4innovation-nfc.git"
+    "url": "git+https://github.com/time4innovation/t4i-capacitor-nfc.git"
   },
   "bugs": {
-    "url": "https://github.com/time4innovation/time4innovation-nfc/issues"
+    "url": "https://github.com/time4innovation/t4i-capacitor-nfc/issues"
   },
   "keywords": [
     "capacitor",
@@ -37,7 +37,7 @@
     "eslint": "eslint . --ext ts",
     "prettier": "prettier \"**/*.{css,html,ts,js,java}\"",
     "swiftlint": "node-swiftlint",
-    "docgen": "docgen --api ZiliconNfcPlugin --output-readme README.md --output-json dist/docs.json",
+    "docgen": "docgen --api Time4InnovationNfcPlugin --output-readme README.md --output-json dist/docs.json",
     "build": "npm run clean && npm run docgen && tsc && rollup -c rollup.config.js",
     "clean": "rimraf ./dist",
     "watch": "tsc --watch",

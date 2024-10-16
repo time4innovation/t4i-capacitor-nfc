@@ -2,21 +2,24 @@
 
 Capacitor plugin for reading NFC tags
 
+### Android
+
 ## Requires
 `@capacitor/core`
 
 ## Install
-Add the following to your package.json
-`https://github.com/time4innovation/t4i-capacitor-nfc.git`
-
+Add the following to your package.json -> dependencies
+```json
+"t4i-capacitor-nfc": "github:time4innovation/t4i-capacitor-nfc"
+```
 
 ## Usage in JavaScript
 Import the following
 ```javascript
 import { Plugins } from "CapacitorCore";
-const { Time4InnovationNfcPlugin } = Plugins;
+const { Time4InnovationNfc } = Plugins;
 ```
-CapacitorCore is included via the following in ember-cli-build.js
+You might include CapacitorCore as the following in ember-cli-build.js
 ```javascript
 'use strict';
 
@@ -35,7 +38,7 @@ Implement the following method and call it where you need to read an RFID-Tag.
 ```javasacript
 nfcInit() {
     // Initialize the NFC detection
-    Time4InnovationNfcPlugin.initializeNFC()
+    Time4InnovationNfc.initializeNFC()
         .then((result) => {
             // Now tagInfo is part of JSObject
             console.log("NFC Tag Information:", result.tagInfo);
@@ -45,3 +48,8 @@ nfcInit() {
         });
 }
 ```
+
+## Manifest.xml
+
+<uses-permission android:name="android.permission.NFC" />
+<uses-feature android:name="android.hardware.nfc" android:required="true"/>

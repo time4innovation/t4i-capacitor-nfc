@@ -1,8 +1,8 @@
-# capacitor-nfc
+# t4i-capacitor-nfc
 
 Capacitor plugin for reading NFC tags
 
-### Android
+# Android
 
 ## Requires
 `@capacitor/core`
@@ -49,7 +49,7 @@ nfcInit() {
 }
 ```
 
-## Manifest.xml
+## Manifest.xml settings
 
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
